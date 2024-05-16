@@ -307,6 +307,7 @@ const CaptionBall = styled.div`
 
 const ViewerBox = styled.div`
   width: 100%;
+  padding: 0 20px;
 
   p {
     font-size: 18px;
@@ -341,8 +342,8 @@ const Footer = styled.footer`
 `;
 
 const FooterContent = styled.div`
-  width: 360px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0 20px;
   display: flex;
   flex-direction: row;
   align-items: center;
