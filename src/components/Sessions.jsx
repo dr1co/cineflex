@@ -19,7 +19,7 @@ export default function Sessions() {
         poster: response.data.posterURL,
       });
     });
-  }, []);
+  }, [movieId]);
 
   return (
     <>

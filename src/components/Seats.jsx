@@ -31,9 +31,9 @@ export default function Seats() {
         state: {
           completedOrder: {
             ...order,
-            number: selectedSeatsNumber,
+            seatsNumber: selectedSeatsNumber,
             title: session.title,
-            weekday: session.weekday,
+            date: session.date,
             time: session.time,
           },
         },
@@ -53,10 +53,11 @@ export default function Seats() {
         title: response.data.movie.title,
         poster: response.data.movie.posterURL,
         weekday: response.data.day.weekday,
+        date: response.data.day.date,
         time: response.data.name,
       });
     });
-  }, []);
+  }, [sessionId]);
 
   return (
     <>
@@ -149,7 +150,12 @@ function Seat({
     }
   } else {
     return (
-      <SeatBall color={"#FBE192"} border={"#F7C52B"} cursor={"default"}>
+      <SeatBall
+        color={"#FBE192"}
+        border={"#F7C52B"}
+        cursor={"default"}
+        onClick={() => console.log("Eu não to disponível porra")}
+      >
         {number}
       </SeatBall>
     );
