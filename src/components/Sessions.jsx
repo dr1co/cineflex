@@ -76,15 +76,16 @@ function PageFooter({ poster, title }) {
 }
 
 const Container = styled.div`
-  width: 360px;
-  margin: 95px auto 147px auto;
+  width: 100%;
+  margin: 95px 0 147px 0;
+  padding: 0 20px;
 `;
 
 const Command = styled.p`
   width: 100%;
   margin: 36px auto;
-  font-size: 24px;
   text-align: center;
+  font-size: 24px;
   color: #293845;
   letter-spacing: 0.04cm;
 `;
@@ -134,8 +135,8 @@ const Footer = styled.footer`
 `;
 
 const FooterContent = styled.div`
-  width: 360px;
-  margin: 0 auto;
+  width: 100%;
+  margin: auto 20px;
   display: flex;
   flex-direction: row;
   align-items: center;

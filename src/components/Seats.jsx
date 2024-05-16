@@ -17,7 +17,12 @@ export default function Seats() {
 
   function placeOrder() {
     const regex = /^\d{11}$/;
-    if (cpf.match(regex) && name !== "" && selectedSeatsId.length !== 0) {
+    if (
+      cpf &&
+      cpf.match(regex) &&
+      name !== "" &&
+      selectedSeatsId.length !== 0
+    ) {
       const order = {
         ids: selectedSeatsId,
         name: name,

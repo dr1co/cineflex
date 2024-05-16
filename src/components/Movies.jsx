@@ -37,11 +37,11 @@ function Movie({ image, movieId }) {
 }
 
 const Container = styled.section`
-  width: 375px;
+  width: 100%;
   margin: 65px auto;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-evenly;
   align-items: center;
 `;
 
