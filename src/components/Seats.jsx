@@ -6,10 +6,8 @@ import { useNavigate, useParams } from "react-router-dom";
 export default function Seats() {
   const [seats, setSeats] = useState([]);
   const [session, setSession] = useState({});
-  const [selectedSeatsId, setSelectedSeatsId] = useState([]);
-  const [selectedSeatsNumber, setSelectedSeatsNumber] = useState([]);
-  const [name, setName] = useState([]);
-  const [cpf, setCpf] = useState([]);
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [credentials, setCredentials] = useState({});
 
   const { sessionId } = useParams();
 
@@ -17,31 +15,44 @@ export default function Seats() {
 
   function placeOrder() {
     const regex = /^\d{11}$/;
-    if (
-      cpf &&
-      cpf.match(regex) &&
-      name !== "" &&
-      selectedSeatsId.length !== 0
-    ) {
+    let flag = true;
+
+    for (const cred in credentials) {
+      if (!regex.test(credentials[cred].cpf)) {
+        flag = false;
+        break;
+      }
+    }
+
+    if (flag) {
+      const selectedSeatsId = selectedSeats.map((seat) => seat.id);
+      const tickets = selectedSeats.map((seat) => {
+        return {
+          idAssento: seat.id,
+          nome: credentials[seat.id].name,
+          cpf: credentials[seat.id].cpf,
+        };
+      });
       const order = {
         ids: selectedSeatsId,
-        name: name,
-        cpf: cpf,
+        compradores: tickets,
       };
-      axios.post(
+      const request = axios.post(
         "https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many",
         order
       );
-      navigate("/sucesso", {
-        state: {
-          completedOrder: {
-            ...order,
-            seatsNumber: selectedSeatsNumber,
-            title: session.title,
-            date: session.date,
-            time: session.time,
+      request.then(() => {
+        navigate("/sucesso", {
+          state: {
+            completedOrder: {
+              ...order,
+              seatsNumber: selectedSeats.map((seat) => seat.number),
+              title: session.title,
+              date: session.date,
+              time: session.time,
+            },
           },
-        },
+        });
       });
     } else {
       alert("Preencha corretamente os campos");
@@ -75,16 +86,22 @@ export default function Seats() {
               id={seat.id}
               number={seat.name}
               availability={seat.isAvailable}
-              selectedSeatsId={selectedSeatsId}
-              setSelectedSeatsId={setSelectedSeatsId}
-              selectedSeatsNumber={selectedSeatsNumber}
-              setSelectedSeatsNumber={setSelectedSeatsNumber}
+              selectedSeats={selectedSeats}
+              setSelectedSeats={setSelectedSeats}
             />
           ))}
         </SeatsList>
         <Caption />
         <ViewerBox>
-          <ViewerCredentials setName={setName} setCpf={setCpf} />
+          {selectedSeats.map((seat) => (
+            <ViewerCredentials
+              key={seat.id}
+              seatNumber={seat.number}
+              seatId={seat.id}
+              credentials={credentials}
+              setCredentials={setCredentials}
+            />
+          ))}
         </ViewerBox>
         <FinishOrderButton onClick={placeOrder}>
           Reservar assento(s)
@@ -100,32 +117,20 @@ export default function Seats() {
   );
 }
 
-function Seat({
-  id,
-  number,
-  availability,
-  selectedSeatsId,
-  setSelectedSeatsId,
-  selectedSeatsNumber,
-  setSelectedSeatsNumber,
-}) {
+function Seat({ id, number, availability, selectedSeats, setSelectedSeats }) {
   const [selected, setSelected] = useState(false);
 
-  function selectSeat(id, n) {
-    const seatsArrayId = selectedSeatsId;
-    const seatsArrayNumber = selectedSeatsNumber;
+  function selectSeat(id, number) {
+    const seatsArrayId = [];
+    selectedSeats.map((seat) => seatsArrayId.push(seat.id));
+    console.log(seatsArrayId);
+
     if (seatsArrayId.includes(id)) {
-      setSelectedSeatsId(seatsArrayId.filter((seat) => seat !== id));
-      setSelectedSeatsNumber(
-        seatsArrayNumber.filter((seat) => seat !== number)
-      );
       setSelected(false);
+      setSelectedSeats(selectedSeats.filter((seat) => seat.id !== id));
     } else {
-      seatsArrayId.push(id);
-      seatsArrayNumber.push(n);
       setSelected(true);
-      setSelectedSeatsId(seatsArrayId);
-      setSelectedSeatsNumber(seatsArrayNumber);
+      setSelectedSeats((prevSeats) => [...prevSeats, { id, number }]);
     }
   }
 
@@ -186,20 +191,41 @@ function Caption() {
   );
 }
 
-function ViewerCredentials({ setName, setCpf }) {
+function ViewerCredentials({
+  seatNumber,
+  seatId,
+  credentials,
+  setCredentials,
+}) {
   return (
-    <>
-      <p>Nome do comprador:</p>
+    <CredentialsBox>
+      <p>Assento {seatNumber} - Nome do comprador:</p>
       <Input
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) =>
+          setCredentials({
+            ...credentials,
+            [seatId]: {
+              ...credentials[seatId],
+              name: e.target.value,
+            },
+          })
+        }
         placeholder="Digite seu nome..."
       />
       <p>CPF do comprador:</p>
       <Input
-        onChange={(e) => setCpf(e.target.value)}
+        onChange={(e) =>
+          setCredentials({
+            ...credentials,
+            [seatId]: {
+              ...credentials[seatId],
+              cpf: e.target.value,
+            },
+          })
+        }
         placeholder="Digite seu CPF..."
       />
-    </>
+    </CredentialsBox>
   );
 }
 
@@ -313,6 +339,12 @@ const ViewerBox = styled.div`
     font-size: 18px;
     color: #293845;
   }
+`;
+
+const CredentialsBox = styled.div`
+  margin: 12px auto;
+  padding-top: 12px;
+  border-top: 1px solid #293845;
 `;
 
 const FinishOrderButton = styled.button`

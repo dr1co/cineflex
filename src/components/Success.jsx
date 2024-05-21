@@ -29,8 +29,8 @@ export default function Success() {
         <div>
           <h1>Comprador</h1>
           <p>
-            Nome: {order.name} <br />
-            CPF: {order.cpf}
+            Nome: {order.compradores[0].nome} <br />
+            CPF: {order.compradores[0].cpf}
           </p>
         </div>
       </MovieInfo>
