@@ -3,22 +3,36 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { apiAddress } from "../api/apiAddress.js";
+import WarnModal from "./WarnModal.jsx";
+
 export default function Seats() {
   const [seats, setSeats] = useState([]);
   const [session, setSession] = useState({});
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [credentials, setCredentials] = useState({});
+  const [modalMessage, setModalMessage] = useState("");
 
   const { sessionId } = useParams();
 
   let navigate = useNavigate();
 
   function placeOrder() {
+    if (selectedSeats.length === 0) {
+      setModalMessage("Selecione ao menos um assento!");
+      return;
+    }
+
+    if (Object.keys(credentials).length === 0) {
+      setModalMessage("Preencha os campos corretamente!");
+      return;
+    }
+
     const regex = /^\d{11}$/;
     let flag = true;
 
     for (const cred in credentials) {
-      if (!regex.test(credentials[cred].cpf)) {
+      if (!regex.test(credentials[cred].cpf) || !credentials[cred].name) {
         flag = false;
         break;
       }
@@ -37,10 +51,7 @@ export default function Seats() {
         ids: selectedSeatsId,
         compradores: tickets,
       };
-      const request = axios.post(
-        "https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many",
-        order
-      );
+      const request = axios.post(`${apiAddress}/seats/book-many`, order);
       request.then(() => {
         navigate("/sucesso", {
           state: {
@@ -55,14 +66,13 @@ export default function Seats() {
         });
       });
     } else {
-      alert("Preencha corretamente os campos");
+      setModalMessage("Preencha os campos corretamente!");
+      return;
     }
   }
 
   useEffect(() => {
-    const request = axios.get(
-      `https://mock-api.driven.com.br/api/v5/cineflex/showtimes/${sessionId}/seats`
-    );
+    const request = axios.get(`${apiAddress}/showtimes/${sessionId}/seats`);
     request.then((response) => {
       setSeats(response.data.seats);
       setSession({
@@ -88,6 +98,7 @@ export default function Seats() {
               availability={seat.isAvailable}
               selectedSeats={selectedSeats}
               setSelectedSeats={setSelectedSeats}
+              setMessage={setModalMessage}
             />
           ))}
         </SeatsList>
@@ -113,17 +124,24 @@ export default function Seats() {
         weekday={session.weekday}
         time={session.time}
       />
+      <WarnModal message={modalMessage} setMessage={setModalMessage} />
     </>
   );
 }
 
-function Seat({ id, number, availability, selectedSeats, setSelectedSeats }) {
+function Seat({
+  id,
+  number,
+  availability,
+  selectedSeats,
+  setSelectedSeats,
+  setMessage,
+}) {
   const [selected, setSelected] = useState(false);
 
   function selectSeat(id, number) {
     const seatsArrayId = [];
     selectedSeats.map((seat) => seatsArrayId.push(seat.id));
-    console.log(seatsArrayId);
 
     if (seatsArrayId.includes(id)) {
       setSelected(false);
@@ -164,7 +182,7 @@ function Seat({ id, number, availability, selectedSeats, setSelectedSeats }) {
         color={"#FBE192"}
         border={"#F7C52B"}
         cursor={"default"}
-        onClick={() => console.log("Eu não to disponível porra")}
+        onClick={() => setMessage("Este assento não está disponível")}
       >
         {number}
       </SeatBall>

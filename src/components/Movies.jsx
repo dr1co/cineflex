@@ -3,26 +3,36 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+import { apiAddress } from "../api/apiAddress.js";
+import WarnModal from "./WarnModal.jsx";
+
 export default function Movies() {
   const [movies, setMovies] = useState([]);
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
-    const request = axios.get(
-      "https://mock-api.driven.com.br/api/v5/cineflex/movies"
-    );
+    const request = axios.get(`${apiAddress}/movies`);
 
     request.then((response) => {
       setMovies(response.data);
     });
+
+    request.catch((err) => {
+      console.log(err);
+      setModalMessage("Ocorreu um erro ao carregar os filmes...");
+    });
   }, []);
 
   return (
-    <Container>
-      <Command> Selecione o filme </Command>
-      {movies.map((movie) => (
-        <Movie key={movie.id} image={movie.posterURL} movieId={movie.id} />
-      ))}
-    </Container>
+    <>
+      <WarnModal message={modalMessage} setMessage={setModalMessage} />
+      <Container>
+        <Command> Selecione o filme </Command>
+        {movies.map((movie) => (
+          <Movie key={movie.id} image={movie.posterURL} movieId={movie.id} />
+        ))}
+      </Container>
+    </>
   );
 }
 

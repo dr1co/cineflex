@@ -3,15 +3,17 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { apiAddress } from "../api/apiAddress.js";
+import WarnModal from "./WarnModal.jsx";
+
 export default function Sessions() {
   const [sessions, setSessions] = useState([]);
   const [movie, setMovie] = useState({});
+  const [modalMessage, setModalMessage] = useState("");
   const { movieId } = useParams();
 
   useEffect(() => {
-    const request = axios.get(
-      `https://mock-api.driven.com.br/api/v5/cineflex/movies/${movieId}/showtimes`
-    );
+    const request = axios.get(`${apiAddress}/movies/${movieId}/showtimes`);
     request.then((response) => {
       setSessions(response.data.days);
       setMovie({
@@ -19,10 +21,18 @@ export default function Sessions() {
         poster: response.data.posterURL,
       });
     });
+
+    request.catch((err) => {
+      console.log(err);
+      setModalMessage(
+        "Não foi possível carregar as sessões do filme escolhido..."
+      );
+    });
   }, [movieId]);
 
   return (
     <>
+      <WarnModal message={modalMessage} setMessage={setModalMessage} />
       <Container>
         <Command> Selecione os horários </Command>
         {sessions.map((session) => (
